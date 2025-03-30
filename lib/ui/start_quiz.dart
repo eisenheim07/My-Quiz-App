@@ -20,9 +20,10 @@ import '../common/global.dart';
 
 class StartQuiz extends StatefulWidget {
   final User user;
-  final FirebaseAuth? firebaseAuth;
+  final FirebaseAuth firebaseAuth;
+  final bool isGoogle;
 
-  const StartQuiz({super.key, required this.user, this.firebaseAuth});
+  const StartQuiz({super.key, required this.user, required this.firebaseAuth, required this.isGoogle});
 
   @override
   State<StartQuiz> createState() => _StartQuizState();
@@ -39,7 +40,9 @@ class _StartQuizState extends State<StartQuiz> {
 
   @override
   void initState() {
-    context.read<UserDetailsCubit>().getUserDetails(widget.user.uid);
+    if (!widget.isGoogle) {
+      context.read<UserDetailsCubit>().getUserDetails(widget.user.uid);
+    }
     super.initState();
   }
 
@@ -50,7 +53,7 @@ class _StartQuizState extends State<StartQuiz> {
         if (state is Error<String>) {
           context.flushBarErrorMessage(message: state.message);
         } else if (state is Success<String>) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(firebaseAuth: widget.firebaseAuth)));
         }
       },
       builder: (context, state2) {
@@ -165,7 +168,8 @@ class _StartQuizState extends State<StartQuiz> {
                                         const SizedBox(height: 40),
                                         Text(
                                           "Learn with Flutter",
-                                          style: Global.customFonts(size: 32, weight: FontWeight.bold, color: AppColors.whiteColor, family: 'poppins2'),
+                                          style:
+                                              Global.customFonts(size: 32, weight: FontWeight.bold, color: AppColors.whiteColor, family: 'poppins2'),
                                         ),
                                         const SizedBox(height: 20),
                                         Text(
@@ -268,10 +272,7 @@ class _StartQuizState extends State<StartQuiz> {
                             var map = {
                               "model": "llama-3.3-70b-versatile",
                               "messages": [
-                                {
-                                  "role": "user",
-                                  "content": Config.getPrompt(selectLevel!, selectedCategory!)
-                                }
+                                {"role": "user", "content": Config.getPrompt(selectLevel!, selectedCategory!)}
                               ]
                             };
                             var json = jsonEncode(map);
@@ -361,12 +362,12 @@ class _StartQuizState extends State<StartQuiz> {
                     row('UUID : ', userMap!['uuid'] ?? 'None'),
                     row('Created At : ', userMap!['createdAt'] ?? 'None'),
                   ] else ...[
-                    row('First Name : ', 'None'),
+                    row('First Name : ', widget.user.displayName ?? 'None'),
                     row('Last Name : ', 'None'),
-                    row('Username : ', 'None'),
-                    row('Phone : ', 'None'),
-                    row('UUID : ', 'None'),
-                    row('Created At : ', 'None'),
+                    row('Username : ', widget.user.displayName ?? 'None'),
+                    row('Phone : ', (widget.user.phoneNumber == null || widget.user.phoneNumber == '') ? 'None' : widget.user.phoneNumber!),
+                    row('UUID : ', widget.user.uid),
+                    row('Created At : ', 'NONE'),
                   ],
                   const Spacer(),
                   Container(

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quizapp/common/config.dart';
 import 'package:quizapp/ui/login_page.dart';
 import 'package:quizapp/ui/start_quiz.dart';
 
@@ -23,10 +24,13 @@ class _SplashPageState extends State<SplashPage> {
       Duration(seconds: 2),
       () {
         if (widget.firebaseAuth.currentUser != null) {
+          var isGoogle = widget.preffs.getBool(Config.IS_GOOGLE) ?? false;
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => StartQuiz(user: widget.firebaseAuth.currentUser!, firebaseAuth: widget.firebaseAuth)));
+              context,
+              MaterialPageRoute(
+                  builder: (context) => StartQuiz(user: widget.firebaseAuth.currentUser!, firebaseAuth: widget.firebaseAuth, isGoogle: isGoogle)));
         } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(firebaseAuth: widget.firebaseAuth)));
         }
       },
     );

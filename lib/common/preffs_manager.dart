@@ -13,6 +13,14 @@ class PreferenceManager {
     return preffs.getString(key);
   }
 
+  putBoolean(String key, bool value) {
+    preffs.setBool(key, value);
+  }
+
+  bool? getBool(String key) {
+    return preffs.getBool(key);
+  }
+
   clear() async {
     return await preffs.clear();
   }

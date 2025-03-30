@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logging/logging.dart' as inspector;
+import 'package:quizapp/businesslogic/cubit/googlesignin_cubit.dart';
 import 'package:quizapp/businesslogic/cubit/login_cubit.dart';
 import 'package:quizapp/businesslogic/cubit/signup_cubit.dart';
 import 'package:quizapp/businesslogic/cubit/userdetails_cubit.dart';
@@ -57,11 +58,12 @@ class _RootAppState extends State<RootApp> {
       splitScreenMode: true,
       builder: (context, child) {
         final preffs = PreferenceManager(widget.preffs);
-        final appRepo = AppRepo(apiService, _firebaseAuth, _firebaseStore);
+        final appRepo = AppRepo(apiService, preffs, _firebaseAuth, _firebaseStore);
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => ChatCubit(appRepo)),
             BlocProvider(create: (context) => SignupCubit(appRepo)),
+            BlocProvider(create: (context) => GoogleSignInCubit(appRepo)),
             BlocProvider(create: (context) => LoginCubit(appRepo)),
             BlocProvider(create: (context) => UserDetailsCubit(appRepo)),
             BlocProvider(create: (context) => SignoutCubit(appRepo)),

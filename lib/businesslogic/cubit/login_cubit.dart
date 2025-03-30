@@ -9,9 +9,9 @@ class LoginCubit extends Cubit<NetworkState<User>> {
 
   LoginCubit(this.appRepo) : super(Initial());
 
-  Future<void> getUserLogin(Map<String, dynamic> map) async {
+  Future<void> getUserSignIn(Map<String, dynamic> map) async {
     emit(Loading());
-    final result = await appRepo.getUserLogin(map);
+    final result = await appRepo.getUserSignIn(map);
     emit(result);
   }
 }

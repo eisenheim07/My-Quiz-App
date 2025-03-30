@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:quizapp/businesslogic/cubit/googlesignin_cubit.dart';
 import 'package:quizapp/businesslogic/cubit/login_cubit.dart';
 import 'package:quizapp/common/colors.dart';
 import 'package:quizapp/common/flushbar.dart';
@@ -12,7 +14,9 @@ import 'package:quizapp/ui/start_quiz.dart';
 import '../widgets/loading_widget.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final FirebaseAuth? firebaseAuth;
+
+  const LoginPage({super.key, required this.firebaseAuth});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -31,66 +35,80 @@ class _LoginPageState extends State<LoginPage> {
         "email": _email,
         "password": _password,
       };
-      context.read<LoginCubit>().getUserLogin(map);
+      context.read<LoginCubit>().getUserSignIn(map);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<LoginCubit, NetworkState<User>>(
+    return BlocConsumer<GoogleSignInCubit, NetworkState<User>>(
       listener: (context, state) {
         if (state is Error<User>) {
           context.flushBarErrorMessage(message: state.message);
         } else if (state is Success<User>) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StartQuiz(user: state.data, firebaseAuth: null)));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StartQuiz(user: state.data, firebaseAuth: widget.firebaseAuth!, isGoogle: true)));
         }
       },
-      builder: (context, state) {
-        return SafeArea(
-          child: Stack(
-            children: [
-              Scaffold(
-                body: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.blueColor, AppColors.greyColor],
-                    ),
-                  ),
-                  child: Center(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Form(
-                          key: _formkey,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _header(),
-                              const SizedBox(height: 48),
-                              _inputField(),
-                              const SizedBox(height: 24),
-                              _forgotPassword(),
-                              const SizedBox(height: 24),
-                              _signup(),
-                            ],
+      builder: (context, state1) {
+        return BlocConsumer<LoginCubit, NetworkState<User>>(
+          listener: (context, state) {
+            if (state is Error<User>) {
+              context.flushBarErrorMessage(message: state.message);
+            } else if (state is Success<User>) {
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => StartQuiz(user: state.data, firebaseAuth: widget.firebaseAuth!, isGoogle: false)));
+            }
+          },
+          builder: (context, state) {
+            return SafeArea(
+              child: Stack(
+                children: [
+                  Scaffold(
+                    body: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [AppColors.blueColor, AppColors.greyColor],
+                        ),
+                      ),
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Form(
+                              key: _formkey,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _header(),
+                                  const SizedBox(height: 48),
+                                  _inputField(),
+                                  const SizedBox(height: 24),
+                                  _googleSignInButton(),
+                                  const SizedBox(height: 24),
+                                  _forgotPassword(),
+                                  const SizedBox(height: 24),
+                                  _signup(),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                  if (state is Loading<User> || state1 is Loading<User>) ...[LoadingWidget()]
+                ],
               ),
-              if (state is Loading<User>) ...[LoadingWidget()]
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _header() {
+  _header() {
     return Column(
       children: [
         Text(
@@ -172,6 +190,39 @@ class _LoginPageState extends State<LoginPage> {
             style: Global.customFonts(size: 18, family: 'poppins2', color: AppColors.whiteColor),
           ),
         )
+      ],
+    );
+  }
+
+  _googleSignInButton() {
+    return Column(
+      children: [
+        Text(
+          "Or",
+          style: Global.customFonts(size: 18, color: AppColors.whiteColor, weight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              context.read<GoogleSignInCubit>().getGoogleSignIn(widget.firebaseAuth);
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.black,
+              backgroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            icon: Image.asset('assets/images/google.png', height: 32),
+            label: Text(
+              "Sign In with Google",
+              style: Global.customFonts(size: 12, color: AppColors.blackColor),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_cloud_firestore/firebase_cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quizapp/businesslogic/models/ChatModel.dart';
+import 'package:quizapp/common/preffs_manager.dart';
 
 import '../../common/config.dart';
 import '../../common/network.dart';
@@ -8,10 +10,11 @@ import '../chopper/ApiService.dart';
 
 class AppRepo {
   final ApiService apiService;
+  final PreferenceManager preffs;
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firebaseStore;
 
-  AppRepo(this.apiService, this._firebaseAuth, this._firebaseStore);
+  AppRepo(this.apiService, this.preffs, this._firebaseAuth, this._firebaseStore);
 
   Future<NetworkState<UserCredential>> getUserSignup(Map<String, dynamic> map) async {
     try {
@@ -43,10 +46,31 @@ class AppRepo {
     }
   }
 
-  Future<NetworkState<User>> getUserLogin(Map<String, dynamic> map) async {
+  Future<NetworkState<User>> getGoogleSignIn(FirebaseAuth? firebaseAuth) async {
+    try {
+      var googleUser = await GoogleSignIn().signIn();
+      var auth = await googleUser!.authentication;
+      final credentials = GoogleAuthProvider.credential(
+        accessToken: auth.accessToken,
+        idToken: auth.idToken,
+      );
+      var result = await firebaseAuth?.signInWithCredential(credentials);
+      if (result!.user != null) {
+        preffs.putBoolean(Config.IS_GOOGLE, true);
+        return Success(result.user!);
+      } else {
+        return Error("Something went wrong, try again.");
+      }
+    } catch (e) {
+      return Error("Something went wrong: ${e.toString()}.");
+    }
+  }
+
+  Future<NetworkState<User>> getUserSignIn(Map<String, dynamic> map) async {
     try {
       var result = await _firebaseAuth.signInWithEmailAndPassword(email: map['email'], password: map['password']);
       if (result.user != null) {
+        preffs.putBoolean(Config.IS_GOOGLE, false);
         return Success(result.user!);
       } else {
         return Error("Something went wrong, try again.");
@@ -72,6 +96,7 @@ class AppRepo {
   Future<NetworkState<String>> getUserSignout() async {
     try {
       await _firebaseAuth.signOut();
+      preffs.clear();
       return Success('logout');
     } catch (e) {
       return Error("Something went wrong: ${e.toString()}.");

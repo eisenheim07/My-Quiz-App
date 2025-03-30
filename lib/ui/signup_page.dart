@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quizapp/businesslogic/cubit/signup_cubit.dart';
 import 'package:quizapp/common/flushbar.dart';
 import 'package:quizapp/ui/login_page.dart';
@@ -76,8 +77,6 @@ class _SignupPageState extends State<SignupPage> {
                             _header(),
                             const SizedBox(height: 48),
                             _form(),
-                            const SizedBox(height: 24),
-                            _googleSignInButton(),
                             const SizedBox(height: 24),
                             _loginLink(),
                           ],
@@ -154,7 +153,7 @@ class _SignupPageState extends State<SignupPage> {
           TextFormField(
             controller: emailController,
             style: Global.customFonts(size: 16, color: AppColors.whiteColor),
-            validator: (value) => value!.isEmpty ? 'Enter valid Email' : null,
+            validator: (value) => value!.isEmpty ? 'Enter Email' : null,
             keyboardType: TextInputType.emailAddress,
             decoration: _inputDecoration('Enter Email Address', Icons.email),
           ),
@@ -185,34 +184,6 @@ class _SignupPageState extends State<SignupPage> {
           )
         ],
       ),
-    );
-  }
-
-  Widget _googleSignInButton() {
-    return Column(
-      children: [
-        Text(
-          "Or",
-          style: Global.customFonts(size: 18, color: AppColors.whiteColor, weight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton.icon(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.black,
-            backgroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-          icon: Image.asset('assets/images/google.png', height: 32),
-          label: Text(
-            "Sign In with Google",
-            style: Global.customFonts(size: 12, color: AppColors.blackColor),
-          ),
-        ),
-      ],
     );
   }
 
@@ -260,7 +231,7 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _loginLink() {
+  _loginLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
