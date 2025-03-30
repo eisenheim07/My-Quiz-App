@@ -176,21 +176,25 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  InputDecoration _inputDecoration(String hint, IconData icon, {bool? flag = false}) {
+  _inputDecoration(String hint, IconData icon, {bool? flag = false}) {
     return InputDecoration(
       suffixIcon: flag!
           ? GestureDetector(
-        onTap: () {
-          setState(() {
-            isVisible = !isVisible;
-          });
-        },
-        child: Icon(
-          isVisible ? Icons.visibility : Icons.visibility_off,
-          color: AppColors.whiteColor,
-        ),
-      )
+              onTap: () {
+                setState(() {
+                  isVisible = !isVisible;
+                });
+              },
+              child: Icon(
+                isVisible ? Icons.visibility : Icons.visibility_off,
+                color: AppColors.whiteColor,
+              ),
+            )
           : null,
+      prefixIcon: Icon(
+        icon,
+        color: AppColors.whiteColor,
+      ),
       hintText: hint,
       hintStyle: Global.customFonts(size: 18, color: AppColors.whiteColor),
       filled: true,
@@ -199,7 +203,20 @@ class _LoginPageState extends State<LoginPage> {
         borderRadius: BorderRadius.circular(30),
         borderSide: BorderSide.none,
       ),
-      prefixIcon: Icon(icon, color: Colors.white70),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(
+          color: AppColors.greyColor,
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderSide: const BorderSide(
+          color: Colors.red,
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
     );
   }
 }
